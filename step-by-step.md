@@ -13,24 +13,32 @@ Steps are implemented using git tags.
 p.s. thanks to @EladBezalel and @DevVersion for creating the [material tutorial](https://github.com/EladBezalel/material2-start/) where I stole the workshop code from.  After you complete this one, try that one!
 
 # Step 0 to 1
-Step one adds [boostrap](http://www.getbootstrap.com) to the project for better styling.  It does this by modifying the `.angular-cli.json` file and adding to the styles array.   
-## 1a Install Boostrap
-`npm install bootstrap --save`
+Step one adds [angular material design](matarial.angular.io) the project for better styling. To do this, we follow the directions on the material.angular.io site:
+## 1a Install Material and the CDK (component development kit)
+`npm install --save @angular/material @angular/cdk`
 
-## 1b Modify `.angular-cli.json`
-open `.angular-cli.json` and modify the `assets` array.
+## 1b Add Material Animations
+`npm install --save @angular/animations`
 
-The Fragment of the file is as follows:
-````
-    "styles": [
-        "styles.css",
-        "../node_modules/bootstrap/dist/css/bootstrap.min.css"
-      ],
-````
+## 1c Add a pre-built theme
+To do this, modify `styles.css` in the `src` directory which contains the global styles for the angular project.  Insert the following:
+`@import "~@angular/material/prebuilt-themes/purple-green.css"`
 
-insure ng serve is not running.  if so, stop it and restart after saving the file.
+## 1c Add Material Icons and Fonts
+In the `src` directory, add the following two lines to `index.html`
+```html
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">`
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" rel="stylesheet">
+```
 
-`ng serve` and you should get 'app-works' but in a slightly different font.
+## 1d Activate the styles in the default angular page
+open the file `app.component.html` in the `src\app` The material typography is used when the css class `mat-typography` is applied to a portion of an html file.   To do that, let's wrap the whole page in a section by putting the opening tage in the first line of the file:
+`<section class="mat-typography">`
+and closing it in the last
+`</section>`
+
+You should now be able to re run the application and see the use of the Google Roboto font instead of the browser default font for the angular startup page.  Do that by running:
+`ng serve`
 
 # Step 1 to 2: create two way binding on an edit field
 Open the file `app.component.ts` in the \src\app folder.
