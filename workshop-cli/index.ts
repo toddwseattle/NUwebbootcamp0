@@ -28,7 +28,7 @@ const getTagList = () => git.tags().then(({all: tags}) => tags);
 
 const getTagHash = tagName => git.raw(['show-ref', '-s', tagName]);
 
-const titlestring = 'Wildhacks Angular Workshop';
+const titlestring = 'NUvention Web 2018 Bootcamp Tutorial';
 const confirmSelectionMenu = name => {
   const subMenu = createMenu({x: 2, y: 2});
   subMenu.writeLine(titlestring);
