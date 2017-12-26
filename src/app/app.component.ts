@@ -6,5 +6,11 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'app';
+  title = 'My Favorite Github Users and Orgs';
+  ghId = '';
+  ghIds: string[] = [];
+  addGhId(toadd: string) {
+      this.ghIds.push(toadd);
+      this.ghId = '';
+  }
 }
