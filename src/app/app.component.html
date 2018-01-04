@@ -1,4 +1,5 @@
 <section class="mat-typography">
+<div class="wildcat-colors"> 
 <div style="text-align:center">
   <h1>
     Welcome to {{ title }}!
@@ -8,9 +9,11 @@
   <mat-form-field>
     <input matInput [(ngModel)]="ghId" placeholder="Enter a github org or user id"  value="toddwseattle" >
   </mat-form-field>
-  <p>{{ghId}}</p>
   <button mat-raised-button (click)="addGhId(ghId)">Add to List</button>
 </div>
-<p>{{ghIds | json}}</p>
+<ul>
+  <li *ngFor="let i of ghIds">{{i}}</li>
+</ul>
+</div>
 </section>
 
