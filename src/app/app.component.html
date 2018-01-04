@@ -11,9 +11,8 @@
   </mat-form-field>
   <button mat-raised-button (click)="addGhId(ghId)">Add to List</button>
 </div>
-<ul>
-  <li *ngFor="let i of ghIds">{{i}}</li>
-</ul>
+<app-id-list [idlist]="ghIds"></app-id-list>
+
 </div>
 </section>
 

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { GithubId } from './github-id';
 
 @Component({
   selector: 'app-root',
@@ -8,9 +9,9 @@ import { Component } from '@angular/core';
 export class AppComponent {
   title = 'My Favorite Github Users and Orgs';
   ghId = '';
-  ghIds: string[] = [];
+  ghIds: GithubId[] = [];
   addGhId(toadd: string) {
-      this.ghIds.push(toadd);
+      this.ghIds.push(new GithubId(toadd)) ;
       this.ghId = '';
   }
 }

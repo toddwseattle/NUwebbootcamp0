@@ -2,13 +2,13 @@
 The tutorial requires node.js, npm, the angular cli, and git.   See the [Readme](readme.md) for more information on installing and verifying these components.
 
 # Switching Steps with npm run workshop
-You can switch to a completed step at anytime to see the answer by using the following npm command:
+You can switch to a completed step at anytime to see the answer and to get a completed repository by using the following npm command:
 ````
 npm run workshop
 ````
 
 this will present a list of the steps. Note: choosing a step wipes out any local work on the repository.
-Steps are implemented using git tags.
+Steps are implemented using [git tags](https://git-scm.com/book/en/v2/Git-Basics-Tagging).
 
 p.s. thanks to @EladBezalel and @DevVersion for creating the [material tutorial](https://github.com/EladBezalel/material2-start/) where I stole the workshop code from.  After you complete this one, try that one!
 
@@ -174,54 +174,107 @@ and `app.component.css` should look like this:
     background-color: #4E2A84;
     color: #d8d6d6;
 }
-# Step 3 to 4:  refactor and create a stylish artist list component with favorites
+````
+# Step 3 to 4:  refactor and create a stylish github user list component with favorites
+
+We have implemented a first pass at our user story, so let's tackle another in our backlog:
+
+>As a user, I want to be able to designate some of my saved github id's as favorities
+
+ We want to make it a little bit more stylish, and as we start to save a bigger list of users we like, we would also like to create a set of favorites.  
 
 ## Create an Artist class with a name and favorite property
-We can use the angular cli to create a typescript class file to hold the Artist object.   Create it with a name string property and a favorite boolean property:
+so far we have just been capturing a string for each github id; now we also have to designate whether it is a favorite.  Like in other languages, we can create [classes](https://www.typescriptlang.org/docs/handbook/classes.html), and their cousins [interfaces](https://www.typescriptlang.org/docs/handbook/interfaces.html) in typescript.  In this case we will use a class
+We can use the angular cli to create a typescript class file to hold the GithubId object.   Create it with a name string property and a favorite boolean property:
 
-1.  generate the class with the angular cli:
-`ng g class Artist`
-this will create artist.ts in the src\app directory.
+1.  navigate to your root folder (e.g. `\nuwebboot0`) generate the class with the angular cli:
+`ng g class GithubId`
+this will create `github-id.ts` in the src\app directory.  Notice for the camelCase name it puts a `-` in the name.
 
 open the file and create this class:
 ````
- export class Artist {
+ export class GithubId {
     public favorite = false;
     constructor(public name: string) { }
 }
 ````
+>note like other languages, we create a `contstructor` method called when the class is created.  The contructor takes a name parameter.  If we mark that parameter with `public` or `private`, typescript also creates it as a property of the class.   Note also our class has a public `favorite` property.  We initialize it to false; and typescript knows because of that it will be type boolean.
 
-2. now create the new component, `app-artist-list` by executing the following command:
-`ng g component artistList`
-3. make sure the component activates appropriately.  put the tag `<app-artist-list></app-artist-list>` in `app.component.html`.  
-When this is served, you should see artist list works! in the browser.
-4. change app.component to create a list of artist objects with a favorite property.  change the method properties as below in app.component.ts:
-````
-artists: Artist[] = [];
-
-  addArtist(toadd: string) {
-      this.artists.push(new Artist(toadd));
-      this.artist = '';
+2. now create the new component that will dispaly our id list, `app-id-list` by executing the following command:
+`ng g component idList`  This will create three files in `src/app/id-list`:
+ - `id-list.component.html` the component template
+ - `id-list.component.spec.ts` a unit test stub file
+ - `id-list.component.ts` the component code file.
+3. make sure the component activates appropriately.  put the tag `<app-id-list></app-id-list>` in `app.component.html`.  
+When this is served, you should see *id-list works!* in the browser.
+4. change app.component to use the githubId objects.  First import it, then change the array type, andchage the add method to create a list of githubId objects with a favorite property.  change the method properties as in the below fragment of app.component.ts:
+````typescript
+import { GithubId } from './github-id';
+// ...
+ ghIds: GithubId[] = [];
+  addGhId(toadd: string) {
+      this.ghIds.push(new GithubId(toadd));
+      this.ghId = '';
   }
-  ````
-5. change the reference to app-artist-list to pass an input property in `[]` toe the tag:
-  `<app-artist-list [artistlist]="artists"></app-artist-list>`
-6. add artist list as an input using the @Input decorator.  First, import it from the angular libary.  The first line will read:
+````
+
+5. To output our list in the component, we need to pass it from app-component to app-id-list. To do this, we change the reference to app-artist-list to pass an input property in `[]` to the tag:
+  `<app-artist-list [idlist]="ghIds"></app-artist-list>`
+6. To receive the id list, add it as as an input using the @Input decorator.  First, import it from the angular libary.  The first line of `id-list.component.ts` will read:
 `import { Component, OnInit, Input } from '@angular/core';`
 
-also import the artist class:
-`import { Artist } from '../artist';`
+also import the GithubId class as was done in app.component:
+`import { GithubId } from './github-id';`
 
-before the contructor of the class, add the @input decorator and declare `artistlist`:
-` @Input() artistlist: Artist[];`
+before the contructor of the class, add the @Input decorator and declare 
+`@Input() idlist: GithubId[];` 
+
 7. finally, in the artistList component (`artist-list.component.ts`) add a method to toggle the favorite flag in the object:
-````
- toggleFavorite(favartist: Artist) {
-    favartist.favorite = !favartist.favorite;
+
+````typescript
+ toggleFavorite(favid: GithubId) {
+    favid.favorite = !favid.favorite;
   }
 ````
-8. now make the view match. Open `artist-list.component.html` We will put the artists and favorites in a `<div>` and `<table>`.  For the favorite column, we will add a button that shows an empty or filled star depending on the disposition of the favorite flag for that artist object.
-- create the basic table.  We use some simple bootstrap styles Note: we use `ngFor` again, this time in the table row (`<tr>`) element:
+
+The full `id-list.component.ts` file should look like this:
+````typescript
+import { Component, OnInit, Input } from '@angular/core';
+import { GithubId } from '../github-id';
+@Component({
+  selector: 'app-id-list',
+  templateUrl: './id-list.component.html',
+  styleUrls: ['./id-list.component.css']
+})
+
+export class IdListComponent implements OnInit {
+  @Input() idlist: GithubId[];
+  constructor() { }
+
+  ngOnInit() {
+  }
+  toggleFavorite(favid: GithubId) {
+    favid.favorite = !favid.favorite;
+  }
+}
+
+````
+8. now make the view match, with a list and favorite button for each element in the list. For the favorite column, we will add a button that shows an empty or filled heart depending on the disposition of the favorite flag for that id object.
+- We will use a few new Material Design components to implement this:  [list](https://material.angular.io/components/list/overview), to show each iteam and [icon](https://material.angular.io/components/icon/overview) to show the heart in the button.  Like with the button component, we need to import them in `app.module.ts`: 
+````typescript
+import { MatInputModule, MatButtonModule, MatIconModule, MatListModule } from '@angular/material';
+/...
+imports: [
+    BrowserModule,
+    BrowserAnimationsModule,
+    FormsModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatListModule
+  ],
+````  
+- Open `id-list.component.html` Delete the contents of the file We will put the artists and favorites in a `<div>`.   We use the component directive `<mat-list>` to create the list.  Each item is a `<mat-list-item>`.  We use ngFor to show each of the id's in the components list input.
 ````
 <div class="container">
   <table class="table-striped table-bordered">
