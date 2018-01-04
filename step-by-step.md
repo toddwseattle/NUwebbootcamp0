@@ -275,39 +275,25 @@ imports: [
   ],
 ````  
 - Open `id-list.component.html` Delete the contents of the file We will put the artists and favorites in a `<div>`.   We use the component directive `<mat-list>` to create the list.  Each item is a `<mat-list-item>`.  We use ngFor to show each of the id's in the components list input.
-````
-<div class="container">
-  <table class="table-striped table-bordered">
-    <tr>
-      <th class="col-md-1 col-sm-1">Fav</th>
-      <th class="col-md-6 col-sm-4" >Artist</th>
-    </tr>
-    <tr *ngFor="let a of artistlist; let i=index">
-      <td>
-       MyFav
-      </td>
-      <td >{{a.name}}</td>
-    </tr>
-  </table>
+````html
+<div>
+  <mat-list>
+    <mat-list-item *ngFor="let id of idlist">
+      {{id.name}}
+    </mat-list-item>
+  </mat-list>
 </div>
 ````
-This should render the artists when adeded using `ng serve`
+This should render the artists when added using `ng serve`
 
-9. Now we need to toggle the favorite.  in the first table data element, where it now says 'MyFav'  we will put two buttons.  We show the star based on the favorite property.  To do this, we use the `*ngIf= ` structural directive.   When the expression is true, that element is shown (and evaluated if there are methods or properties access within).  A `<span>` is useful to do this.  When the button is clicked, it should call the method we created and toggle the favorite flag.  The button will look like this:
+9. Now we need to toggle the favorite.  in `<mat-list-item>` tag, before where we show the name with `{{id.name}}`  we will put a button to toggle the favorite.  We show the heart based on the favorite property.  To do this, we use the `*ngIf= ` structural directive.   When the expression is true, that element is shown (and evaluated if there are methods or properties access within).  A `<span>` is useful to do this.  When the button is clicked, it should call the method we created and toggle the favorite flag.  The button within the `<mat-list-item>` will look like this:
+````html
+  <button mat-icon-button (click)="toggleFavorite(id)">
+        <mat-icon *ngIf="id.favorite">favorite</mat-icon>
+        <mat-icon *ngIf="!id.favorite">favorite_border</mat-icon>
+  </button>  {{id.name}}
 ````
-  <button (click)="toggleFavorite(a)" class="btn btn-xs artist-fav">
-          <span *ngIf="a.favorite" class="glyphicon glyphicon-star" aria-hidden="true"></span>
-          <span *ngIf="!a.favorite" class="glyphicon glyphicon-star-empty" aria-hidden="true"></span>
-  </button>
-````
-We style this button again with wildcat colors.  css styles are local to the component, so create the `artist-fav` style in `artist-list.component.css`:
 
-````
-.artist-fav {
-    background-color: #4E2A84;
-    color: #d8d6d6;
-}
-````
 # 4 to 5 Add an Artist Info Service
 In this step we call out to the server to get some additional meta data for each artist so we can show a picture and potentially some other info.   A service provides a way to isolate logic that may be shared across components.  It's a special angular class, that can be 'injected' into components to provide new functions.
 1.  Use the cli to generate the component `ng g s artistInfo`
