@@ -427,3 +427,4 @@ Now when we run our application, we see that after adding the user id, it calls 
 Now when you run the application, you should see our generic Avatar in front of the user name.
 
 # Step 5 to 6 Using HttpClient to call the GIT REST API
+
