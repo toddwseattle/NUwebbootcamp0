@@ -1,10 +1,11 @@
 <div>
   <mat-list>
     <mat-list-item *ngFor="let id of idlist">
-     <button mat-icon-button (click)="toggleFavorite(id)">
-        <mat-icon *ngIf="id.favorite">favorite</mat-icon>
-        <mat-icon *ngIf="!id.favorite">favorite_border</mat-icon>
-    </button>  {{id.name}}
+      <button mat-icon-button (click)="toggleFavorite(id)">
+          <mat-icon *ngIf="id.favorite">favorite</mat-icon>
+          <mat-icon *ngIf="!id.favorite">favorite_border</mat-icon>
+      </button>
+      <img [src]="id.avatar_url" alt="avatar" width="50"> {{id.name}} ({{id.bio}})  
     </mat-list-item>
   </mat-list>
 </div>

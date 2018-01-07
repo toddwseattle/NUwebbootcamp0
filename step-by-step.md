@@ -10,6 +10,13 @@ npm run workshop
 this will present a list of the steps. Note: choosing a step wipes out any local work on the repository.
 Steps are implemented using [git tags](https://git-scm.com/book/en/v2/Git-Basics-Tagging).
 
+# Recommended setup
+I recommend you open your each step at the begining with a good programmer's editor like [VS Code](https://code.visualstudio.com/).  Also start a command shell and keep the build running and automatically reloading on `http://localhost:4200` by typing the following at the command line:
+````
+ng serve
+````
+
+
 p.s. thanks to @EladBezalel and @DevVersion for creating the [material tutorial](https://github.com/EladBezalel/material2-start/) where I stole the workshop code from.  After you complete this one, try that one!
 
 # Step 0 to 1
@@ -189,9 +196,9 @@ We can use the angular cli to create a typescript class file to hold the GithubI
 
 1.  navigate to your root folder (e.g. `\nuwebboot0`) generate the class with the angular cli:
 `ng g class GithubId`
-this will create `github-id.ts` in the src\app directory.  Notice for the camelCase name it puts a `-` in the name.
+this will create `github-id.ts` in the src\app directory.  Notice for the camelCase name it puts a `-` in the name. 
 
-open the file and create this class:
+    Open the file and create this class:
 ````
  export class GithubId {
     public favorite = false;
@@ -202,9 +209,9 @@ open the file and create this class:
 
 2. now create the new component that will dispaly our id list, `app-id-list` by executing the following command:
 `ng g component idList`  This will create three files in `src/app/id-list`:
- - `id-list.component.html` the component template
- - `id-list.component.spec.ts` a unit test stub file
- - `id-list.component.ts` the component code file.
+   - `id-list.component.html` the component template
+   - `id-list.component.spec.ts` a unit test stub file
+   - `id-list.component.ts` the component code file.
 3. make sure the component activates appropriately.  put the tag `<app-id-list></app-id-list>` in `app.component.html`.  
 When this is served, you should see *id-list works!* in the browser.
 4. change app.component to use the githubId objects.  First import it, then change the array type, andchage the add method to create a list of githubId objects with a favorite property.  change the method properties as in the below fragment of app.component.ts:
@@ -294,33 +301,129 @@ This should render the artists when added using `ng serve`
   </button>  {{id.name}}
 ````
 
-# 4 to 5 Add an Artist Info Service
-In this step we call out to the server to get some additional meta data for each artist so we can show a picture and potentially some other info.   A service provides a way to isolate logic that may be shared across components.  It's a special angular class, that can be 'injected' into components to provide new functions.
-1.  Use the cli to generate the component `ng g s artistInfo`
+# 4 to 5 Add a Github ID Info Service
+Our next story is:
+> As a user, in the list of Github ID's, I see additional information like a description and their avatar
+
+To implement this story, we use an Angular concept called a [service](https://angular.io/tutorial/toh-pt4).  A service is a special [singleton function](http://www.dofactory.com/javascript/singleton-design-pattern) used to share data (or get data) across multiple components. It's a special angular class, that can be ['injected'](https://stackoverflow.com/questions/130794/what-is-dependency-injection) into components to provide new functions.  Let's make our first one:
+1.  Use the cli to generate the component `ng g s GitIdInfo`
 by default two files are added in the `app` directory
 ````
-  artist-info.service.spec.ts
-  artist-info.service.ts
+  git-id-info.service.spec.ts
+  git-id-info.service.ts
 ````
 The spec file is a test.  Note that unlike components, just a .ts file is generated (no html or css).  A test is generated (unlike a simple class).  
 
-The format of the service is also different from the class.  In particular, the Angular specific annotation @Injectable is added to the class definition.  This make it so it can be 'injected' into the contstructor of the view.   This more losely bind the UI components to the controller logic in the service; and promotes easier substitution for component reuse and testing.
+The format of the service is also different from the class.  In particular, the Angular specific annotation @Injectable is added to the class definition.  This makes it so it can be 'injected' into the contstructor of the view component.   This more loosely binds the UI components to the controller logic in the service; and promotes easier substitution for component reuse and testing.
 
-2.  the CLI does not automatically add the service to our modules and components.  First, declare it in the module file `app.module.ts`.  A synonym for services is `provider`.  Add the `artistInfo` service to the provider, and import the definition from the `.ts` file.  In `app.module.ts` `@Module` should look like this:
-````
+2.  the CLI does not automatically add the service to our modules and components.  First, declare it in the module file `app.module.ts`.  A synonym for services is `provider`.  Add the `GitIdInfoService` service to the provider section, and import the definition from the `.ts` file.  In `app.module.ts` `@NgModule` should look like this:
+````typescript
+// ...
+import { GitIdInfoService } from './git-id-info.service';
+// ...
 @NgModule({
   declarations: [
     AppComponent,
-    ArtistListComponent
+    IdListComponent
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     FormsModule,
-    HttpModule
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatListModule
   ],
-  providers: [ArtistInfoService],
+  providers: [GitIdInfoService],
   bootstrap: [AppComponent]
 })
+//...
 ````
-3.  Let's make our service actually do something.  To start, let's just have it return a string.  We're going to want to get a URL to an artist's picture.  Let's just return a fake url based on what's passed.
+3.  Let's make our service actually do something.  We know we at least want to get the id's bio and it's avatar.  To do this, we'll create a new structure that holds the additional information.  Since this will eventually match the webservice we are calling out to with the github api, [interfaces in typescript](https://weblogs.asp.net/dwahlin/the-role-of-interfaces-in-typescript) are a good way to implement. 
+- Since we will want access to the structure in both the component and the service, we can implement in seperate file; but we can just add it to the class file we created earlier, `github-id.ts`.  In the file, before the class, create the interface; export it so the component and service can consume it. Additionally, we will want to have the info associated with our id class; so we will have it implement the interface. The file will look like this:
+````typescript
+export interface GitIdInfo {
+    bio: string;
+    avatar_url: string;
+  }
 
+export class GithubId implements GitIdInfo {
+    public favorite = false;
+    public bio: string;
+    public avatar_url: string;
+    constructor(public name: string) { }
+}
+
+````
+- now import the interface into the service.  We need to create a method in our service that will return the GitIDInfo for a given github login id (what we are calling "name" in our GithubId class).  let's call the method `GetGitIdInfo(login: string).` For our first implementation, we will just create some sample infomation based on the login for the bio; and the same generic avatar for each call. The service implementation will look like this:
+````typescript
+import { Injectable } from '@angular/core';
+import { GitIdInfo } from './github-id';
+
+@Injectable()
+export class GitIdInfoService {
+
+  constructor() { }
+
+  GetGitIdInfo(login: string): GitIdInfo {
+    return({
+      bio: login + ' biography information',
+      avatar_url: '/assets/images/User_Avatar.png'
+    });
+  }
+}
+
+````  
+- We will use the service to add the info at the same time the id is entered; so we will call it from `app.component.ts` it must be "injected" into the constructor.  We will assign access to the service to the `ids` class member of AppComponent.   Additionally, the service (and our new interface) must be imported into the component.  The fragment will look like:
+````typescript
+//...
+import { GithubId, GitIdInfo } from './github-id';
+import { GitIdInfoService } from './git-id-info.service';
+//...
+export class AppComponent {
+  title = 'My Favorite Github Users and Orgs';
+  ghId = '';
+  ghIds: GithubId[] = [];
+  constructor(public ids: GitIdInfoService) { }
+//...
+````
+- Once the *Add to List* button is pressed, we need to call the service to look up the bio information for the user and fetch the avatar.  We do this by calling `this.ids.GetGitIdInfo` with the github user id.  Let's modify the `addGhId` method of AppComponent to do that in `app.component.ts`: 
+````typescript
+// ...
+  addGhId(toadd: string) {
+      const info = this.ids.GetGitIdInfo(toadd);
+      const newid = new GithubId(toadd);
+      newid.avatar_url = info.avatar_url;
+      newid.bio = info.bio;
+      this.ghIds.push(newid);
+      this.ghId = '';
+  }
+// ...
+````
+- Now we can change our **id-list** component to display this additional information by changing the template `id-list/id-list.component.html`:
+````html
+<!-- ...-->
+<mat-list-item *ngFor="let id of idlist">
+     <button mat-icon-button (click)="toggleFavorite(id)">
+        <mat-icon *ngIf="id.favorite">favorite</mat-icon>
+        <mat-icon *ngIf="!id.favorite">favorite_border</mat-icon>
+    </button>  {{id.name}} ({{id.bio}})  Avatar: {{id.avatar_url}}
+    </mat-list-item>
+<!-- ...-->
+````
+Now when we run our application, we see that after adding the user id, it calls the service to create the bio string; and also displays the text of the avatar_url.  Of course, we'd like to actually display an avatar image.  To create a default image to be displayed, we can leverage the `asset` folder created by the `cli` in the `\src` directory when we put our application together.  All the files we put here are copied to the final directory, and accessible by referencing `/assets` as a relative url.   Let's put our default avatar in an `images` directory, in our project structure: `/src/assets/images`.  There is a a decent default avatar on the wikimedia.org site [User_avatar](https://commons.wikimedia.org/wiki/File:User_Avatar.png).  (I downloaded the 450x450 one; but we are going to initially show it very small to fit on a single line).  Download this and place it in `/src/assets/images`.   Now modify our list in `id-list/id-list.component.html` to read:
+````html
+<!-- ...-->
+<mat-list-item *ngFor="let id of idlist">
+      <button mat-icon-button (click)="toggleFavorite(id)">
+          <mat-icon *ngIf="id.favorite">favorite</mat-icon>
+          <mat-icon *ngIf="!id.favorite">favorite_border</mat-icon>
+      </button>
+      <img [src]="id.avatar_url" alt="avatar" width="50"> {{id.name}} ({{id.bio}})  
+    </mat-list-item>
+<!-- ...-->
+````
+Now when you run the application, you should see our generic Avatar in front of the user name.
+
+# Step 5 to 6 Using HttpClient to call the GIT REST API

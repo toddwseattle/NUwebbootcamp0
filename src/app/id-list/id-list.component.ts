@@ -8,10 +8,10 @@ import { GithubId } from '../github-id';
 
 export class IdListComponent implements OnInit {
   @Input() idlist: GithubId[];
-  constructor() { }
 
   ngOnInit() {
   }
+
   toggleFavorite(favid: GithubId) {
     favid.favorite = !favid.favorite;
   }

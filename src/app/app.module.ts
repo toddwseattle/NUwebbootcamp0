@@ -6,6 +6,7 @@ import { MatInputModule, MatButtonModule, MatIconModule, MatListModule } from '@
 
 import { AppComponent } from './app.component';
 import { IdListComponent } from './id-list/id-list.component';
+import { GitIdInfoService } from './git-id-info.service';
 
 
 @NgModule({
@@ -22,7 +23,7 @@ import { IdListComponent } from './id-list/id-list.component';
     MatIconModule,
     MatListModule
   ],
-  providers: [],
+  providers: [GitIdInfoService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
