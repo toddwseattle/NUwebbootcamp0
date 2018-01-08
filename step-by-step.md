@@ -427,4 +427,154 @@ Now when we run our application, we see that after adding the user id, it calls 
 Now when you run the application, you should see our generic Avatar in front of the user name.
 
 # Step 5 to 6 Using HttpClient to call the GIT REST API
+For our last step, we are going to extend our last user story to retrieve the information from github:
+> As a user, in the list of Github ID's, I see additional information like their bio and their avatar *retrieved from github.com*.
+
+To implement this, we are going to extend our service to call a [REST API](https://en.wikipedia.org/wiki/Representational_state_transfer) provided by [Github](https://developer.github.com/v3/).   While many of these calls require authentication, basic information on a user does not.   Checkout the [github users api docs](https://developer.github.com/v3/users/).  You can get an idea of what this api returns by looking at a call from my userid  [https://api.github.com/users/toddwseattle](https://api.github.com/users/toddwseattle)
+
+REST API's typically return their data in a format like XML or JSON.  Github returns in JSON, which is great because it maps well to structures in javascript and interfaces in typescript.
+
+## 5a Refactoring for login and name  
+
+When we look at the github API structure, you may see a problem.  We have been using the property **name** to represent the github id; but the github API uses **login** to represent the github user id, and the **name** property is the friendly name of the login.   Before we call out to the HttpClient, let's refactor the application to use login, and add a name property.
+1. First, modify `github-id.ts` to have login in the constructor of the class; and add a name property to the interface:
+````typescript
+export interface GitIdInfo {
+    login: string;
+    name: string;
+    bio: string;
+    avatar_url: string;
+}
+export class GithubId implements GitIdInfo {
+    public favorite = false;
+    public bio: string;
+    public avatar_url: string;
+    public name: string;
+    constructor(public login: string) { }
+}
+````
+Change the **GetGitIdInfo** method in  `github-id-info.ts` service like this to conform to our new interface:
+```typescript
+GetGitIdInfo(login: string): GitIdInfo {
+    return({
+      bio: login + ' biography information',
+      avatar_url: '/assets/images/User_Avatar.png',
+      login: login,
+      name: ''
+    });
+  }
+````
+Fix the `id-list.component.html` template to show login instead of name:
+````html
+ <mat-list-item *ngFor="let id of idlist">
+      <button mat-icon-button (click)="toggleFavorite(id)">
+          <mat-icon *ngIf="id.favorite">favorite</mat-icon>
+          <mat-icon *ngIf="!id.favorite">favorite_border</mat-icon>
+      </button>
+      <img [src]="id.avatar_url" alt="avatar" width="50"> {{id.login}} ({{id.bio}})  
+    </mat-list-item>
+````
+This should run and behave as before.
+## 5b Use the HttpClient in the git-id-info.service
+Angular provides a service to make it easy to call web and restful services like github, called the [HttpClient](https://angular.io/tutorial/toh-pt6).  Note This was introduced in Angular 4.3; so there are still references on the web (before summer 2017) to a prior http service.
+
+Like our own service, we import and inject in the constructor the HttpClient.  The fragment in `git-id-info.service.ts` looks like this:
+````typescript
+// ...
+import { HttpClient } from '@angular/common/http';
+// ...
+@Injectable()
+export class GitIdInfoService {
+
+  constructor(private http: HttpClient) { }
+// ...
+````
+We also need to import it into our `@NgModule` in `app.module.ts`:
+````typescript
+//...
+import { HttpClientModule } from '@angular/common/http';
+// ...
+@NgModule({
+  declarations: [
+    AppComponent,
+    IdListComponent
+  ],
+  imports: [
+    BrowserModule,
+    BrowserAnimationsModule,
+    FormsModule,
+    HttpClientModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatListModule
+  ],
+  providers: [GitIdInfoService],
+  bootstrap: [AppComponent]
+})
+// ...
+
+````
+So far all of our interactions have been local to the machine, but a key probelem with web applications, is how they handle asyncrhonous operations:  mouse movements, keyboard inputs, the user unexpectedly hitting the 'back' button, and calling out to web servers that have varying degrees of network latency.   Angular makes extensive use of a library called [rxJs](https://github.com/ReactiveX/rxjs) which provides 'reactive' extensions for javascript/typescript and makes it easy to handle asyncrhonous operations.  
+
+Core to observables is the idea that things like mouse movements and data coming back from a web server are *streams*.   An obervable provides a way to *subscribe* to a stream to get the values emitted. [This article](https://developer.telerik.com/topics/web-development/introduction-observables-angular-developers/) describes how we come to observables in angular well In the case of our API call, just one value is emitted after we do an *http get* from the service.  In general, it makes sense to return the Observable up from the service rather than the subscribed value as you shall see.
+
+### Calling HttpClient Get Method
+
+The [HttpClient](https://angular.io/api/common/http/HttpClient) provides a complete way to call rest services like the Github API.  It has methods that correspond to the main Http protocol verbs of get, post, put, patch, and delete.   To get the information about the user, we need to call get with the api for a username.   The get method returns an Observable which is a typescript [generic](https://www.typescriptlang.org/docs/handbook/generics.html).   We can add a type in `<>` in the call signature to specify the type we are returning.   In our case, we are mapping the result of the `/users/{user}` REST call to the interface we defined, **GitIdInfo**.  So we import the `Observable` form the rxjs library and change our call signature in `git-id-info.service.` to: 
+````typescript
+// ...
+import { Observable } from 'rxjs/Observable';
+// ...
+ GetGitIdInfo(login: string): Observable<GitIdInfo>
+//
+````
+For the API call, I prefer putting the base URL in a constant in the file; and also creating a constant in the method for the specific api.   We make the call based on the username passed in.   As mentioned, we return the whole observable.  `git-id-info.service.ts` now looks like this:
+````typescript
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { GitIdInfo, GithubId } from './github-id';
+import { Observable } from 'rxjs/Observable';
+
+const githubAPI = 'https://api.github.com';
+
+@Injectable()
+export class GitIdInfoService {
+
+  constructor(private http: HttpClient) { }
+
+  GetGitIdInfo(login: string): Observable<GitIdInfo> {
+    const userAPI = githubAPI + 'users/';
+    return(this.http.get<GitIdInfo>(userAPI + login));
+  }
+}
+````
+### Consuming the Observable
+We now need to consume the API and its observable in our component.  We call the service in `app.component.ts` in the **addGhId** method, which currently looks like this:
+
+````typescript
+ addGhId(toadd: string) {
+      const info = this.ids.GetGitIdInfo(toadd);
+      const newid = new GithubId(toadd);
+      newid.avatar_url = info.avatar_url;
+      newid.bio = info.bio;
+      this.ghIds.push(newid);
+      this.ghId = '';
+  }
+````
+This isn't quite what we need for a couple of reasons:
+1.  the **GetGitIdInfo** method of our service no longer returns a simple interface, **GitIdInfo**, but now returns **Observable<GitIdInfo>** an Observable with the type of **GitIdInfo**.   We need to handle that appropriately, by subscribing to the observable
+2. We augment an object we create; but there is no reason we couldn't just use the information returned by the interface, becaue when the call is successful; all the information we need (and more) is populated in the interface.
+
+To do both these things we change the method to:
+````typescript
+addGhId(toadd: string) {
+    this.ids.GetGitIdInfo(toadd).subscribe( info => {
+      this.ghIds.push(info as GithubId);
+      });
+    this.ghId = '';
+  }
+````
+You might see something unfamiliar here:  We call **GetGitIdInfo** as before, it now returns an **Observable**.   We then call the **subscribe** method; which will get called by the observable when it emits new data.  As a parameter to the subscribe, we pass an anonymous arrow function.  info will contain the emitted **GitHubId** data from the api call.  We can then push this on the array.
+
 

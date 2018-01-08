@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatInputModule, MatButtonModule, MatIconModule, MatListModule } from '@angular/material';
+import { HttpClientModule } from '@angular/common/http';
 
 import { AppComponent } from './app.component';
 import { IdListComponent } from './id-list/id-list.component';
@@ -18,6 +19,7 @@ import { GitIdInfoService } from './git-id-info.service';
     BrowserModule,
     BrowserAnimationsModule,
     FormsModule,
+    HttpClientModule,
     MatInputModule,
     MatButtonModule,
     MatIconModule,

@@ -14,11 +14,9 @@ export class AppComponent {
   constructor(public ids: GitIdInfoService) { }
 
   addGhId(toadd: string) {
-      const info = this.ids.GetGitIdInfo(toadd);
-      const newid = new GithubId(toadd);
-      newid.avatar_url = info.avatar_url;
-      newid.bio = info.bio;
-      this.ghIds.push(newid);
+    this.ids.GetGitIdInfo(toadd).subscribe( info => {
+      this.ghIds.push(info as GithubId);
+      });
       this.ghId = '';
   }
 }

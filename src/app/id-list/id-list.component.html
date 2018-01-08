@@ -5,7 +5,7 @@
           <mat-icon *ngIf="id.favorite">favorite</mat-icon>
           <mat-icon *ngIf="!id.favorite">favorite_border</mat-icon>
       </button>
-      <img [src]="id.avatar_url" alt="avatar" width="50"> {{id.name}} ({{id.bio}})  
+      <img [src]="id.avatar_url" alt="avatar" width="50"> {{id.login}} - {{id.name}} from {{id.location}} ({{id.public_repos}} Public Repos) on github since {{id.created_at | date}}
     </mat-list-item>
   </mat-list>
 </div>
