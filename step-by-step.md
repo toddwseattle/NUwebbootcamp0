@@ -74,7 +74,7 @@ After modifying the file,
 
 Open the file `app.component.ts` in the \src\app folder. change the value of title from app works! to something like *My Github buddies*.
 
-just below the `title` assignment in the class, initialize a new variable to hold the artist.  
+just below the `title` assignment in the class, initialize a new variable to hold the github id, **ghId**.  
 
 we're going to create a button bound to a function that takes a string (a github username) to add to an array of usernames / github organizations we will display, and reset the edit file.   Within the component should be the following fragment to do those tasks:
 
@@ -146,7 +146,7 @@ The full html file will look like the following
 When you run this step, you will need to click tab or click the mouse just above the button to see the edit box.
 
 ## Step 2 to 3: ngFor
-We now want to display our artists in a bulleted format.  This introduces us to the structural template directive in angular, `ngFor`.
+We now want to display our Github ID's in a bulleted format.  This introduces us to the structural template directive in angular, `ngFor`.
 
 open `app.component.html`.
 
@@ -190,7 +190,7 @@ We have implemented a first pass at our user story, so let's tackle another in o
 
  We want to make it a little bit more stylish, and as we start to save a bigger list of users we like, we would also like to create a set of favorites.  
 
-## Create an Artist class with a name and favorite property
+## Create an GithubID class with a name and favorite property
 so far we have just been capturing a string for each github id; now we also have to designate whether it is a favorite.  Like in other languages, we can create [classes](https://www.typescriptlang.org/docs/handbook/classes.html), and their cousins [interfaces](https://www.typescriptlang.org/docs/handbook/interfaces.html) in typescript.  In this case we will use a class
 We can use the angular cli to create a typescript class file to hold the GithubId object.   Create it with a name string property and a favorite boolean property:
 
@@ -225,8 +225,8 @@ import { GithubId } from './github-id';
   }
 ````
 
-5. To output our list in the component, we need to pass it from app-component to app-id-list. To do this, we change the reference to app-artist-list to pass an input property in `[]` to the tag:
-  `<app-artist-list [idlist]="ghIds"></app-artist-list>`
+5. To output our list in the component, we need to pass it from app-component to app-id-list. To do this, we change the reference to app-id-list to pass an input property in `[]` to the tag:
+  `<app-id-list [idlist]="ghIds"></app-id-list>`
 6. To receive the id list, add it as as an input using the @Input decorator.  First, import it from the angular libary.  The first line of `id-list.component.ts` will read:
 `import { Component, OnInit, Input } from '@angular/core';`
 
@@ -236,7 +236,7 @@ also import the GithubId class as was done in app.component:
 before the contructor of the class, add the @Input decorator and declare 
 `@Input() idlist: GithubId[];` 
 
-7. finally, in the artistList component (`artist-list.component.ts`) add a method to toggle the favorite flag in the object:
+7. finally, in the IdListComponent component (`id-list.component.ts`) add a method to toggle the favorite flag in the object:
 
 ````typescript
  toggleFavorite(favid: GithubId) {
@@ -281,7 +281,7 @@ imports: [
     MatListModule
   ],
 ````  
-- Open `id-list.component.html` Delete the contents of the file We will put the artists and favorites in a `<div>`.   We use the component directive `<mat-list>` to create the list.  Each item is a `<mat-list-item>`.  We use ngFor to show each of the id's in the components list input.
+- Open `id-list.component.html` Delete the contents of the file We will put the Github ID's and favorites in a `<div>`.   We use the component directive `<mat-list>` to create the list.  Each item is a `<mat-list-item>`.  We use ngFor to show each of the id's in the components list input.
 ````html
 <div>
   <mat-list>
@@ -291,7 +291,7 @@ imports: [
   </mat-list>
 </div>
 ````
-This should render the artists when added using `ng serve`
+This should render the Github ID list when added using `ng serve`
 
 9. Now we need to toggle the favorite.  in `<mat-list-item>` tag, before where we show the name with `{{id.name}}`  we will put a button to toggle the favorite.  We show the heart based on the favorite property.  To do this, we use the `*ngIf= ` structural directive.   When the expression is true, that element is shown (and evaluated if there are methods or properties access within).  A `<span>` is useful to do this.  When the button is clicked, it should call the method we created and toggle the favorite flag.  The button within the `<mat-list-item>` will look like this:
 ````html
